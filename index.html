@@ -348,6 +348,7 @@
     <p>Prix mis à jour en temps réel depuis les données publiques officielles de l'État.</p>
   </div>
 
+  <input type="hidden" id="tollguruKey" value="tg_F9E2FD106CAA46B38658750E2C0872E6">
   <input type="hidden" id="apiKey" value="eyJvcmciOiI1YjNjZTM1OTc4NTExMTAwMDFjZjYyNDgiLCJpZCI6ImY1NjRiM2M4Yjc0OTQ0ZDlhNmNjM2FiOWQzNjFhNTE2IiwiaCI6Im11cm11cjY0In0=">
 
   <!-- Légende -->
@@ -445,6 +446,11 @@
           <td>Coût</td>
           <td id="r-cout-a">—</td>
           <td id="r-cout-ar">—</td>
+        </tr>
+        <tr class="group-row">
+          <td>Péages</td>
+          <td id="r-peage-a">—</td>
+          <td id="r-peage-ar">—</td>
         </tr>
         <tr class="group-row group-last">
           <td>Litres consommés</td>
@@ -600,7 +606,7 @@ async function getRoute(c1, c2, apiKey) {
   const r = await fetch('https://api.openrouteservice.org/v2/directions/driving-car', {
     method: 'POST',
     headers: { 'Authorization': apiKey, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ coordinates: [c1, c2] })
+    body: JSON.stringify({ coordinates: [c1, c2], geometry: true })
   });
   if (!r.ok) {
     let msg = 'Erreur itinéraire (code ' + r.status + ')';
@@ -611,7 +617,36 @@ async function getRoute(c1, c2, apiKey) {
   }
   const d = await r.json();
   const s = d.routes[0].summary;
-  return { distanceKm: s.distance / 1000, dureeSec: s.duration };
+  const polyline = d.routes[0].geometry;
+  return { distanceKm: s.distance / 1000, dureeSec: s.duration, polyline };
+}
+
+async function getTolls(polyline) {
+  const key = document.getElementById('tollguruKey').value;
+  try {
+    const r = await fetch('https://dev.api.tollguru.com/v1/calc/route', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': key
+      },
+      body: JSON.stringify({
+        source: 'openroute',
+        polyline: polyline,
+        vehicleType: '2AxlesAuto',
+        currency: 'EUR'
+      })
+    });
+    if (!r.ok) return null;
+    const d = await r.json();
+    const routes = d.route;
+    if (routes && routes.costs && routes.costs.EUR !== undefined) {
+      return parseFloat(routes.costs.EUR);
+    }
+    return null;
+  } catch(e) {
+    return null;
+  }
 }
 
 function formatDuree(sec) {
@@ -640,6 +675,12 @@ async function calculer() {
     const distA   = route.distanceKm;
     const litresA = (distA * conso) / 100;
     const coutA   = litresA * prixActuel;
+
+    // Péages via TollGuru
+    const peage = await getTolls(route.polyline);
+    const fmtEurPeage = n => n !== null ? n.toLocaleString('fr-FR', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €' : 'N/A';
+    document.getElementById('r-peage-a').textContent  = fmtEurPeage(peage);
+    document.getElementById('r-peage-ar').textContent = peage !== null ? fmtEurPeage(peage * 2) : 'N/A';
 
     const fmtKm = n => Math.round(n).toLocaleString('fr-FR') + ' km';
     document.getElementById('r-dist-a').textContent    = fmtKm(distA);
