@@ -619,7 +619,7 @@ async function getRoute(c1, c2, apiKey) {
   const r = await fetch('https://api.openrouteservice.org/v2/directions/driving-car', {
     method: 'POST',
     headers: { 'Authorization': apiKey, 'Content-Type': 'application/json' },
-    body: JSON.stringify({ coordinates: [c1, c2], geometry: true, geometry_format: "encodedpolyline" })
+    body: JSON.stringify({ coordinates: [c1, c2], geometry: true })
   });
   if (!r.ok) {
     let msg = 'Erreur itinéraire (code ' + r.status + ')';
