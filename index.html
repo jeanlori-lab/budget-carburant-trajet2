@@ -771,8 +771,8 @@ async function calculer() {
     document.getElementById('r-peage-ar').textContent = peage !== null ? fmtEurPeage(peage * 2) : 'N/A';
     const totalA  = peage !== null ? coutA + peage : null;
     const totalAR = peage !== null ? (coutA + peage) * 2 : null;
-    document.getElementById('r-total-a').textContent  = totalA  !== null ? fmtEurPeage(totalA)  : fmtEurPeage(coutA) + ' *';
-    document.getElementById('r-total-ar').textContent = totalAR !== null ? fmtEurPeage(totalAR) : fmtEurPeage(coutA * 2) + ' *';
+    document.getElementById('r-total-a').textContent  = totalA  !== null ? fmtEurPeage(totalA)  : fmtEurPeage(coutA);
+    document.getElementById('r-total-ar').textContent = totalAR !== null ? fmtEurPeage(totalAR) : fmtEurPeage(coutA * 2);
 
     const fmtKm = n => Math.round(n).toLocaleString('fr-FR') + ' km';
     document.getElementById('r-dist-a').textContent    = fmtKm(distA);
