@@ -410,7 +410,7 @@
       <div class="param-icon">🏁</div>
       <div class="param-label">Destination</div>
       <div class="param-input">
-        <input type="text" id="arrivee" placeholder="Lieu de vacances" oninput="resetResultat()">
+        <input type="text" id="arrivee" placeholder="Lieu de vacances" oninput="destinationChangee()">
       </div>
     </div>
   </div>
@@ -514,7 +514,7 @@ async function onAutoComplete(input, listId) {
           e.preventDefault();
           input.value = label;
           list.style.display = 'none';
-          resetResultat();
+          destinationChangee();
         });
         list.appendChild(div);
       });
@@ -600,8 +600,22 @@ function chargerRechercheDepuisLien() {
 
 function mettreDestinationDansLien(destination) {
   const params = new URLSearchParams(window.location.search);
-  params.set('q', destination);
-  history.replaceState(null, '', `${window.location.pathname}?${params.toString()}`);
+  const valeur = destination.trim();
+
+  if (valeur) {
+    params.set('q', valeur);
+  } else {
+    params.delete('q');
+  }
+
+  const baseUrl = window.location.href.split('?')[0].split('#')[0];
+  const query = params.toString();
+  history.replaceState(null, '', query ? `${baseUrl}?${query}` : baseUrl);
+}
+
+function destinationChangee() {
+  resetResultat();
+  mettreDestinationDansLien(document.getElementById('arrivee').value);
 }
 
 chargerRechercheDepuisLien();
