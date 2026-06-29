@@ -691,8 +691,11 @@ async function getTolls(geometry) {
       body: JSON.stringify({ polyline: polyline, vehicleType: '2AxlesAuto' })
     });
     const d = await r.json();
-    console.log('Toll proxy HTTP', r.status, JSON.stringify(d).slice(0, 500));
-    // Pas de péage sur l'itinéraire => coût de 0 (et non une erreur N/A).
+    console.log('Toll proxy HTTP', r.status, JSON.stringify(d).slice(0, 1200));
+    // Le Worker renvoie un coût normalisé { cost: <nombre|null> }.
+    if (typeof d.cost === 'number') return d.cost;
+    if (d.cost === null) return null;
+    // Compat : ancienne forme (réponse brute TollGuru).
     if (d.route && d.route.hasTolls === false) return 0;
     const costs = (d.route && d.route.costs)
       || (d.routes && d.routes[0] && d.routes[0].costs)
