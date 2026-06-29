@@ -324,9 +324,12 @@
 
     /* Contours subtils pour séparer visuellement les blocs Trajet et Coût & conso.
        Bordure continue autour de chaque ligne (pas de trait vertical interne). */
-    .res-table tr.group-row td { border-top: 1px solid #dbe3ec; border-bottom: 1px solid #dbe3ec; }
-    .res-table tr.group-row td:first-child { border-left: 1px solid #dbe3ec; }
-    .res-table tr.group-row td:nth-child(3) { border-right: 1px solid #dbe3ec; }
+    .res-table tr.group-row td,
+    .res-table tr.total-standalone td { border-top: 1px solid #dbe3ec; border-bottom: 1px solid #dbe3ec; }
+    .res-table tr.group-row td:first-child,
+    .res-table tr.total-standalone td:first-child { border-left: 1px solid #dbe3ec; }
+    .res-table tr.group-row td:nth-child(3),
+    .res-table tr.total-standalone td:nth-child(3) { border-right: 1px solid #dbe3ec; }
 
     .maps-wrap {
       text-align: center;
