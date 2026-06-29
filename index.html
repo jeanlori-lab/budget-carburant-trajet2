@@ -413,7 +413,7 @@
       <div class="param-icon">📍</div>
       <div class="param-label">Départ</div>
       <div class="param-input">
-        <input type="text" id="depart" value="60 rue de Dantzig, Paris" readonly>
+        <input type="text" id="depart" value="60 rue de Dantzig, Paris" oninput="resetResultat()">
       </div>
     </div>
 
@@ -727,8 +727,7 @@ function formatDuree(sec) {
 async function calculer() {
   hideError();
   const apiKey  = document.getElementById('apiKey').value.trim();
-  document.getElementById('depart').value = DEPART_FIXE;
-  const depart  = DEPART_FIXE;
+  const depart  = document.getElementById('depart').value.trim();
   const arrivee = document.getElementById('arrivee').value.trim();
   const conso   = parseFloat(document.getElementById('conso').value);
 
