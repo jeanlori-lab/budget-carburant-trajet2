@@ -631,32 +631,55 @@ async function getRoute(c1, c2, apiKey) {
   const d = await r.json();
   const s = d.routes[0].summary;
   const polyline = d.routes[0].geometry;
+  console.log('ORS geometry type:', typeof polyline, JSON.stringify(polyline).slice(0, 200));
   return { distanceKm: s.distance / 1000, dureeSec: s.duration, polyline };
 }
 
-async function getTolls(polyline) {
+// Encode GeoJSON coordinates en polyline Google (format attendu par TollGuru)
+function encodePolyline(coords) {
+  let output = '';
+  let prevLat = 0, prevLng = 0;
+  for (const [lng, lat] of coords) {
+    const dLat = Math.round((lat - prevLat) * 1e5);
+    const dLng = Math.round((lng - prevLng) * 1e5);
+    prevLat = lat; prevLng = lng;
+    for (let v of [dLat, dLng]) {
+      v = v < 0 ? ~(v << 1) : v << 1;
+      while (v >= 0x20) { output += String.fromCharCode((0x20 | (v & 0x1f)) + 63); v >>= 5; }
+      output += String.fromCharCode(v + 63);
+    }
+  }
+  return output;
+}
+
+async function getTolls(geometry) {
   const key = document.getElementById('tollguruKey').value;
   try {
+    // ORS retourne GeoJSON : { type: "LineString", coordinates: [[lng,lat],...] }
+    let polyline;
+    if (geometry && geometry.coordinates) {
+      polyline = encodePolyline(geometry.coordinates);
+    } else if (typeof geometry === 'string') {
+      polyline = geometry;
+    } else {
+      return null;
+    }
+    console.log('Polyline encodée:', polyline.slice(0, 50));
     const r = await fetch('https://dev.api.tollguru.com/v1/calc/route', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key
-      },
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key },
       body: JSON.stringify({
-        source: 'openroute',
+        source: 'google',
         polyline: polyline,
         vehicleType: '2AxlesAuto',
         currency: 'EUR'
       })
     });
-    if (!r.ok) return null;
     const d = await r.json();
-    // TollGuru peut retourner le coût dans différentes structures
+    console.log('TollGuru response:', JSON.stringify(d).slice(0, 500));
     if (d.route && d.route.costs && d.route.costs.EUR !== undefined) return parseFloat(d.route.costs.EUR);
     if (d.routes && d.routes[0] && d.routes[0].costs && d.routes[0].costs.EUR !== undefined) return parseFloat(d.routes[0].costs.EUR);
     if (d.costs && d.costs.EUR !== undefined) return parseFloat(d.costs.EUR);
-    console.log('TollGuru response:', JSON.stringify(d).slice(0, 300));
     return null;
   } catch(e) {
     console.log('TollGuru error:', e);
