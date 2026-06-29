@@ -611,8 +611,8 @@ async function getRoute(c1, c2, apiKey) {
   if (!r.ok) {
     let msg = 'Erreur itinéraire (code ' + r.status + ')';
     if (r.status === 403) msg = 'Clé API invalide ou quota dépassé';
-    if (r.status === 404) msg = 'Itinéraire introuvable — essaie de préciser l\'adresse';
-    if (r.status === 400) msg = 'Adresse non reconnue — essaie d\'être plus précis (ex: "Houdan, Yvelines" ou "Paris 15")';
+    if (r.status === 404) msg = 'Itinéraire introuvable : essaie de préciser l\'adresse';
+    if (r.status === 400) msg = 'Itinéraire introuvable : essaie de préciser l\'adresse';
     throw new Error(msg);
   }
   const d = await r.json();
