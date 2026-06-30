@@ -245,6 +245,18 @@
       flex-shrink: 0;
     }
     .stop-remove:hover { color: #8e0000; }
+    .drag-handle {
+      cursor: grab;
+      color: #b0bcc8;
+      font-size: 16px;
+      line-height: 1;
+      padding: 0 2px;
+      flex-shrink: 0;
+      touch-action: none;
+      user-select: none;
+    }
+    .drag-handle:active { cursor: grabbing; }
+    .point-row.dragging { opacity: 0.65; background: #eef4fb; border-radius: 8px; }
 
     /* Bouton */
     .btn {
@@ -470,29 +482,13 @@
       </div>
     </div>
 
-    <div class="param-row">
-      <div class="param-icon">🏠</div>
-      <div class="param-label">Départ</div>
-      <div class="param-input">
-        <input type="text" id="depart" value="60 rue de Dantzig, Paris" oninput="resetResultat()">
-      </div>
-    </div>
-
-    <!-- Étapes intermédiaires (ajoutées dynamiquement) -->
-    <div id="stops"></div>
+    <!-- Points du trajet (départ, étapes, destination) — réordonnables -->
+    <div id="points"></div>
 
     <!-- Contrôles : ajouter une étape + inverser le trajet -->
     <div class="itinerary-controls">
-      <button type="button" class="link-btn" onclick="addStop()">➕ Ajouter une étape</button>
+      <button type="button" class="link-btn" onclick="addPoint()">➕ Ajouter une étape</button>
       <button type="button" class="swap-btn" onclick="swapItinerary()" title="Inverser l'ordre du trajet">⇅</button>
-    </div>
-
-    <div class="param-row">
-      <div class="param-icon">🏁</div>
-      <div class="param-label">Destination</div>
-      <div class="param-input">
-        <input type="text" id="arrivee" placeholder="Lieu de vacances" oninput="destinationChangee()">
-      </div>
     </div>
   </div>
 
@@ -668,17 +664,9 @@ chargerPrix();
 
 const DEPART_FIXE = '60 rue de Dantzig, Paris';
 
-function chargerRechercheDepuisLien() {
-  const params = new URLSearchParams(window.location.search);
-  const q = params.get('q');
-
-  document.getElementById('depart').value = DEPART_FIXE;
-  if (q) document.getElementById('arrivee').value = q.trim();
-}
-
 function mettreDestinationDansLien(destination) {
   const params = new URLSearchParams(window.location.search);
-  const valeur = destination.trim();
+  const valeur = (destination || '').trim();
 
   if (valeur) {
     params.set('q', valeur);
@@ -691,54 +679,125 @@ function mettreDestinationDansLien(destination) {
   history.replaceState(null, '', query ? `${baseUrl}?${query}` : baseUrl);
 }
 
-function destinationChangee() {
-  resetResultat();
-  mettreDestinationDansLien(document.getElementById('arrivee').value);
-}
+// --- Points du trajet (départ, étapes, destination), réordonnables ---
+const pointsEl = () => document.getElementById('points');
 
-// --- Étapes intermédiaires ---
-function makeStopRow(value) {
+function makePointRow(value) {
   const row = document.createElement('div');
-  row.className = 'param-row stop-row';
+  row.className = 'param-row point-row';
   row.innerHTML =
-    '<div class="param-icon">📍</div>' +
-    '<div class="param-label">Étape</div>' +
-    '<div class="param-input"><input type="text" class="stop-input" placeholder="Arrêt" oninput="resetResultat()"></div>' +
-    '<button type="button" class="stop-remove" onclick="removeStop(this)" title="Supprimer cette étape">✕</button>';
+    '<div class="drag-handle" title="Glisser pour déplacer">⠿</div>' +
+    '<div class="param-icon"></div>' +
+    '<div class="param-label"></div>' +
+    '<div class="param-input"><input type="text" class="point-input" oninput="onPointInput()"></div>' +
+    '<button type="button" class="stop-remove" onclick="removePoint(this)" title="Supprimer cette étape">✕</button>';
   if (value) row.querySelector('input').value = value;
+  row.querySelector('.drag-handle').addEventListener('pointerdown', startDrag);
   return row;
 }
-function renumberStops() {
-  document.querySelectorAll('#stops .stop-row').forEach((row, i) => {
+
+// Met à jour icône / libellé / placeholder / bouton supprimer selon la position.
+function refreshPoints() {
+  const rows = Array.from(pointsEl().querySelectorAll('.point-row'));
+  rows.forEach((row, i) => {
+    const icon = row.querySelector('.param-icon');
     const label = row.querySelector('.param-label');
-    if (label) label.textContent = 'Étape ' + (i + 1);
+    const input = row.querySelector('.point-input');
+    const rm = row.querySelector('.stop-remove');
+    if (i === 0) {
+      icon.textContent = '🏠'; label.textContent = 'Départ';
+      input.placeholder = 'Adresse de départ'; rm.style.display = 'none';
+    } else if (i === rows.length - 1) {
+      icon.textContent = '🏁'; label.textContent = 'Destination';
+      input.placeholder = 'Lieu de vacances'; rm.style.display = 'none';
+    } else {
+      icon.textContent = '📍'; label.textContent = 'Étape ' + i;
+      input.placeholder = 'Arrêt'; rm.style.display = '';
+    }
   });
 }
-function addStop(value) {
-  document.getElementById('stops').appendChild(makeStopRow(typeof value === 'string' ? value : ''));
-  renumberStops();
-  resetResultat();
-}
-function removeStop(btn) {
-  const row = btn.closest('.stop-row');
-  if (row) row.remove();
-  renumberStops();
-  resetResultat();
-}
-function getStops() {
-  return Array.from(document.querySelectorAll('#stops .stop-input')).map(i => i.value.trim());
+
+function getPoints() {
+  return Array.from(pointsEl().querySelectorAll('.point-input')).map(i => i.value.trim());
 }
 
-// Inverse tout l'ordre du trajet : départ <-> destination, étapes inversées.
+function addPoint() {
+  const container = pointsEl();
+  // On insère la nouvelle étape juste avant la destination (dernière ligne).
+  container.insertBefore(makePointRow(''), container.querySelector('.point-row:last-child'));
+  refreshPoints();
+  resetResultat();
+}
+
+function removePoint(btn) {
+  const row = btn.closest('.point-row');
+  if (row) row.remove();
+  refreshPoints();
+  resetResultat();
+  updateLien();
+}
+
+function onPointInput() {
+  resetResultat();
+  updateLien();
+}
+// Conservé pour compat (anciennes références).
+function destinationChangee() { onPointInput(); }
+
+function updateLien() {
+  const pts = getPoints();
+  mettreDestinationDansLien(pts.length ? pts[pts.length - 1] : '');
+}
+
+// Inverse tout l'ordre du trajet (départ <-> destination, étapes retournées).
 function swapItinerary() {
-  const dep = document.getElementById('depart');
-  const arr = document.getElementById('arrivee');
-  const stopInputs = Array.from(document.querySelectorAll('#stops .stop-input'));
-  const values = [dep.value, ...stopInputs.map(i => i.value), arr.value].reverse();
-  dep.value = values[0];
-  arr.value = values[values.length - 1];
-  values.slice(1, -1).forEach((v, i) => { stopInputs[i].value = v; });
-  destinationChangee();
+  const container = pointsEl();
+  Array.from(container.querySelectorAll('.point-row')).reverse()
+    .forEach(r => container.appendChild(r));
+  refreshPoints();
+  resetResultat();
+  updateLien();
+}
+
+// Glisser-déposer (souris + tactile) via Pointer Events.
+let dragRow = null;
+function startDrag(e) {
+  dragRow = e.target.closest('.point-row');
+  if (!dragRow) return;
+  dragRow.classList.add('dragging');
+  document.addEventListener('pointermove', onDragMove);
+  document.addEventListener('pointerup', endDrag, { once: true });
+  e.preventDefault();
+}
+function onDragMove(e) {
+  if (!dragRow) return;
+  const container = pointsEl();
+  const others = Array.from(container.querySelectorAll('.point-row:not(.dragging)'));
+  let ref = null;
+  for (const r of others) {
+    const rect = r.getBoundingClientRect();
+    if (e.clientY < rect.top + rect.height / 2) { ref = r; break; }
+  }
+  if (ref) container.insertBefore(dragRow, ref);
+  else container.appendChild(dragRow);
+  refreshPoints();
+}
+function endDrag() {
+  if (dragRow) dragRow.classList.remove('dragging');
+  dragRow = null;
+  document.removeEventListener('pointermove', onDragMove);
+  resetResultat();
+  updateLien();
+}
+
+function chargerRechercheDepuisLien() {
+  const params = new URLSearchParams(window.location.search);
+  const q = params.get('q');
+  const container = pointsEl();
+  container.innerHTML = '';
+  container.appendChild(makePointRow(DEPART_FIXE));    // départ
+  container.appendChild(makePointRow(q ? q.trim() : '')); // destination
+  refreshPoints();
 }
 
 chargerRechercheDepuisLien();
@@ -890,9 +949,12 @@ function formatDuree(sec) {
 async function calculer() {
   hideError();
   const apiKey  = document.getElementById('apiKey').value.trim();
-  const depart  = document.getElementById('depart').value.trim();
-  const arrivee = document.getElementById('arrivee').value.trim();
-  const stops   = getStops().filter(s => s.length > 0);
+  const allPts  = getPoints();
+  const depart  = allPts[0] || '';
+  const arrivee = allPts[allPts.length - 1] || '';
+  // Points retenus dans l'ordre, sans les étapes laissées vides.
+  const lieux   = allPts.filter(p => p.length > 0);
+  const stops   = lieux.slice(1, -1);
   const conso   = parseFloat(document.getElementById('conso').value);
 
   if (!depart || !arrivee) return showError('⚠️ Remplis le départ et la destination.');
@@ -905,7 +967,6 @@ async function calculer() {
 
   try {
     // Géocode tous les points dans l'ordre : départ, étapes…, destination.
-    const lieux  = [depart, ...stops, arrivee];
     const coords = await Promise.all(lieux.map(l => geocode(l, apiKey)));
     const c1 = coords[0], c2 = coords[coords.length - 1];
     const route = await getRoute(coords, apiKey);
