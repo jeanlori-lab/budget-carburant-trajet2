@@ -595,8 +595,13 @@ async function onAutoComplete(input) {
       const d = await r.json();
       if (!d.features || d.features.length === 0) { list.style.display = 'none'; return; }
       list.innerHTML = '';
+      const vus = new Set();
       d.features.forEach(f => {
         const label = f.properties.label;
+        // Le géocodeur renvoie parfois plusieurs résultats au même libellé : on dédoublonne.
+        const cle = label.trim().toLowerCase();
+        if (vus.has(cle)) return;
+        vus.add(cle);
         const div = document.createElement('div');
         div.className = 'autocomplete-item';
         div.textContent = '📍 ' + label;
@@ -609,6 +614,7 @@ async function onAutoComplete(input) {
         });
         list.appendChild(div);
       });
+      if (!list.children.length) { list.style.display = 'none'; return; }
       list.style.display = 'block';
     } catch(e) { list.style.display = 'none'; }
   }, 300));
