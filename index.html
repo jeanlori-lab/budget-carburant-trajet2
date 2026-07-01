@@ -97,21 +97,28 @@
     .carburant-row { padding-top: 8px; }
     .passagers-row { padding-bottom: 8px; }
 
-    /* Carburant et Consommation côte à côte (ordi) : émoji à côté du titre,
-       champ en dessous, ligne verticale entre les deux colonnes. */
-    .fuel-conso-cols { display: flex; align-items: stretch; }
+    /* Carburant / Consommation / Passagers côte à côte (ordi) : émoji à côté du
+       titre, champ en dessous, lignes verticales entre les 3 colonnes. Chaque
+       colonne garde sa propre hauteur (pas de stretch) pour éviter les blancs. */
+    .fuel-conso-cols { display: flex; align-items: flex-start; }
     .fuel-conso-cols .carburant-row,
-    .fuel-conso-cols .conso-row {
+    .fuel-conso-cols .conso-row,
+    .fuel-conso-cols .passagers-row {
       flex: 1;
       min-width: 0;
       flex-wrap: wrap;
       row-gap: 8px;
       border-bottom: none;
+      padding-top: 8px;
     }
+    .fuel-conso-cols .conso-row,
+    .fuel-conso-cols .passagers-row { padding-bottom: 8px; }
+    .fuel-conso-cols .param-icon,
+    .fuel-conso-cols .param-label { line-height: 22px; }
     .fuel-conso-cols .param-label { width: auto; }
     .fuel-conso-cols .param-input { flex: 1 0 100%; }
-    .fuel-conso-cols .conso-row { border-left: 1.5px solid #cfd8e0; padding-left: 14px; margin-left: 14px; }
-    .fuel-conso-cols + .passagers-row { margin-top: 14px; }
+    .fuel-conso-cols .conso-row,
+    .fuel-conso-cols .passagers-row { border-left: 1.5px solid #cfd8e0; padding-left: 14px; margin-left: 14px; }
     /* Séparation un peu plus marquée entre le bloc Carburant/Conso et Départ/Destination */
     /* Plus d'air autour du trait pour bien détacher les deux blocs */
     .param-icon {
@@ -357,14 +364,15 @@
       .conso-line .conso-roulette { display: block; }
       .conso-arrow { display: none; }
       .conso-value { width: 92px; }
-      /* Carburant/Consommation restent empilés sur mobile (pas de côte à côte, trop étroit). */
+      /* Carburant/Consommation/Passagers restent empilés sur mobile (pas de
+         côte à côte, trop étroit). */
       .fuel-conso-cols { flex-direction: column; }
       .fuel-conso-cols .carburant-row,
       .fuel-conso-cols .conso-row {
         border-bottom: 1.5px solid #cfd8e0;
       }
-      .fuel-conso-cols .conso-row { border-left: none; padding-left: 0; margin-left: 0; }
-      .fuel-conso-cols + .passagers-row { margin-top: 0; }
+      .fuel-conso-cols .conso-row,
+      .fuel-conso-cols .passagers-row { border-left: none; padding-left: 0; margin-left: 0; }
     }
 
     /* Autocomplete */
@@ -809,7 +817,6 @@
         </div>
       </div>
     </div>
-    </div>
 
     <div class="param-row passagers-row">
       <div class="param-icon">👥</div>
@@ -822,6 +829,7 @@
           <button type="button" class="pass-arrow" id="passPlus" aria-label="Plus de passagers">+</button>
         </div>
       </div>
+    </div>
     </div>
     </div>
   </div>
