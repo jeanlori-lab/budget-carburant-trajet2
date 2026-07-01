@@ -87,8 +87,6 @@
     /* Plus d'air autour du trait pour bien détacher les deux blocs */
     /* padding-top réserve la place de la valeur (sortie du flux, au-dessus de la
        règle) : ainsi l'icône et « Consommation » s'alignent sur la règle. */
-    .conso-row { padding-top: 24px; }
-    .conso-row .param-input { position: relative; }
 
     .param-icon {
       font-size: 16px;
@@ -174,18 +172,20 @@
       margin: 0;
     }
 
-    /* Valeur sélectionnée, au-dessus de la règle (indépendante) */
+    /* Règle + valeur sur une seule ligne (valeur à droite) */
+    .conso-line { display: flex; align-items: center; gap: 10px; }
+    .conso-line .conso-roulette { flex: 1; }
     .conso-value {
-      position: absolute;
-      bottom: calc(100% + 4px);
-      left: 0; right: 0;
-      text-align: center;
+      flex-shrink: 0;
+      width: 66px;
+      text-align: right;
       font-weight: 800;
       color: #1b5e20;
-      font-size: 18px;
+      font-size: 15px;
       line-height: 1;
+      white-space: nowrap;
     }
-    .conso-value .roulette-unit { font-size: 11px; font-weight: 600; color: #6f8a72; }
+    .conso-value .roulette-unit { font-size: 10px; font-weight: 600; color: #6f8a72; }
 
     /* Règle / roulette de consommation (glisser horizontal, souris + doigt) */
     .conso-roulette {
@@ -614,10 +614,12 @@
       <div class="param-label">Consommation</div>
       <div class="param-input">
         <input type="hidden" id="conso" value="7.5">
-        <div class="conso-value"><span id="consoVal">7,5</span> <span class="roulette-unit">L / 100 km</span></div>
-        <div class="conso-roulette" id="consoRoulette" role="slider" aria-label="Consommation au 100 km" aria-valuemin="1" aria-valuemax="30" tabindex="0">
-          <div class="roulette-viewport"><div class="roulette-track" id="rouletteTrack"></div></div>
-          <div class="roulette-center"></div>
+        <div class="conso-line">
+          <div class="conso-roulette" id="consoRoulette" role="slider" aria-label="Consommation au 100 km" aria-valuemin="1" aria-valuemax="30" tabindex="0">
+            <div class="roulette-viewport"><div class="roulette-track" id="rouletteTrack"></div></div>
+            <div class="roulette-center"></div>
+          </div>
+          <div class="conso-value"><span id="consoVal">7,5</span> <span class="roulette-unit">L/100</span></div>
         </div>
       </div>
     </div>
