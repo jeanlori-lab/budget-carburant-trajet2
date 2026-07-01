@@ -586,19 +586,10 @@
     .res-table thead th:nth-child(2) { color: #1976d2; }
     .res-table thead th:nth-child(3) { color: #2e7d32; }
 
-    /* Ligne total */
-    .total-row td { font-weight: 700 !important; font-size: 14px !important; }
-    .total-row td:nth-child(2) { background: #d0e8ff !important; color: #1565c0 !important; }
-    .total-row td:nth-child(3) { background: #c8f0d8 !important; color: #1b5e20 !important; }
-
-    /* Ligne Coût total isolée : bords arrondis (haut + bas) */
-    .total-standalone td:first-child { border-radius: 10px 0 0 10px; }
-    .total-standalone td:nth-child(3) { border-radius: 0 10px 10px 0; }
-
     /* Coût par personne (partage de frais) : sous-ligne discrète dans la même
-       cellule que le total, plutôt qu'une ligne séparée. */
-    .total-standalone td { position: relative; }
-    .total-standalone td.has-per-person { padding-bottom: 22px; }
+       cellule que le coût carburant, plutôt qu'une ligne séparée. */
+    #r-cout-a, #r-cout-ar { position: relative; }
+    #r-cout-a.has-per-person, #r-cout-ar.has-per-person { padding-bottom: 22px; }
     .per-person-note {
       position: absolute;
       left: 0; right: 0;
@@ -631,13 +622,6 @@
       color: #aab4bf;
     }
 
-    /* Mini espace pour détacher la ligne « Coût total » du bloc Carburant */
-    .res-table tr.total-spacer td {
-      background: none;
-      padding: 0;
-      height: 6px;
-    }
-
     /* Sous-blocs résultats */
     .res-table tr.group-header td {
       background: none;
@@ -660,12 +644,9 @@
 
     /* Contours subtils pour séparer visuellement les blocs Trajet et Coût & conso.
        Bordure continue autour de chaque ligne (pas de trait vertical interne). */
-    .res-table tr.group-row td,
-    .res-table tr.total-standalone td { border-top: 1px solid #dbe3ec; border-bottom: 1px solid #dbe3ec; }
-    .res-table tr.group-row td:first-child,
-    .res-table tr.total-standalone td:first-child { border-left: 1px solid #dbe3ec; }
-    .res-table tr.group-row td:nth-child(3),
-    .res-table tr.total-standalone td:nth-child(3) { border-right: 1px solid #dbe3ec; }
+    .res-table tr.group-row td { border-top: 1px solid #dbe3ec; border-bottom: 1px solid #dbe3ec; }
+    .res-table tr.group-row td:first-child { border-left: 1px solid #dbe3ec; }
+    .res-table tr.group-row td:nth-child(3) { border-right: 1px solid #dbe3ec; }
 
     .cheapest-note {
       text-align: left;
@@ -859,12 +840,6 @@
           <td>Litres consommés</td>
           <td id="r-litres-a">—</td>
           <td id="r-litres-ar">—</td>
-        </tr>
-        <tr class="total-spacer"><td colspan="3"></td></tr>
-        <tr class="total-row total-standalone">
-          <td><strong>Coût total</strong></td>
-          <td id="r-total-a">—</td>
-          <td id="r-total-ar">—</td>
         </tr>
       </tbody>
     </table>
@@ -1593,33 +1568,6 @@ async function calculer() {
     const distA   = route.distanceKm;
     const litresA = (distA * conso) / 100;
     const coutA   = litresA * prixActuel;
-    const fmtEurPeage = n => n.toLocaleString('fr-FR', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
-
-    // Coût péages temporairement retiré de l'affichage (fiabilité insuffisante
-    // du calcul en conditions réelles) ; le total ne compte que le carburant.
-    // getTolls() et le suivi de quota restent disponibles pour une réactivation
-    // future, mais ne sont plus appelés ici.
-    const totalAFinal  = coutA;
-    const totalARFinal = coutA * 2;
-    const rTotalA  = document.getElementById('r-total-a');
-    const rTotalAR = document.getElementById('r-total-ar');
-    rTotalA.textContent  = fmtEurPeage(totalAFinal);
-    rTotalAR.textContent = fmtEurPeage(totalARFinal);
-
-    // Partage de frais entre passagers : sous-ligne discrète dans la cellule du total.
-    const passagers = passagersValeur();
-    rTotalA.classList.toggle('has-per-person', passagers > 1);
-    rTotalAR.classList.toggle('has-per-person', passagers > 1);
-    if (passagers > 1) {
-      const noteA = document.createElement('div');
-      noteA.className = 'per-person-note';
-      noteA.textContent = fmtEurPeage(totalAFinal / passagers) + ' / pers.';
-      rTotalA.appendChild(noteA);
-      const noteAR = document.createElement('div');
-      noteAR.className = 'per-person-note';
-      noteAR.textContent = fmtEurPeage(totalARFinal / passagers) + ' / pers.';
-      rTotalAR.appendChild(noteAR);
-    }
 
     const fmtKm = n => Math.round(n).toLocaleString('fr-FR') + ' km';
     document.getElementById('r-dist-a').textContent    = fmtKm(distA);
@@ -1627,8 +1575,25 @@ async function calculer() {
     document.getElementById('r-duree-a').textContent   = formatDuree(route.dureeSec);
     document.getElementById('r-duree-ar').textContent  = formatDuree(route.dureeSec * 2);
     const fmtEur = n => n.toLocaleString('fr-FR', {minimumFractionDigits:2, maximumFractionDigits:2}) + ' €';
-    document.getElementById('r-cout-a').textContent    = fmtEur(coutA);
-    document.getElementById('r-cout-ar').textContent   = fmtEur(coutA * 2);
+    const rCoutA  = document.getElementById('r-cout-a');
+    const rCoutAR = document.getElementById('r-cout-ar');
+    rCoutA.textContent  = fmtEur(coutA);
+    rCoutAR.textContent = fmtEur(coutA * 2);
+
+    // Partage de frais entre passagers : sous-ligne discrète dans la cellule du coût carburant.
+    const passagers = passagersValeur();
+    rCoutA.classList.toggle('has-per-person', passagers > 1);
+    rCoutAR.classList.toggle('has-per-person', passagers > 1);
+    if (passagers > 1) {
+      const noteA = document.createElement('div');
+      noteA.className = 'per-person-note';
+      noteA.textContent = fmtEur(coutA / passagers) + ' / pers.';
+      rCoutA.appendChild(noteA);
+      const noteAR = document.createElement('div');
+      noteAR.className = 'per-person-note';
+      noteAR.textContent = fmtEur((coutA * 2) / passagers) + ' / pers.';
+      rCoutAR.appendChild(noteAR);
+    }
     const fmtL = n => n.toLocaleString('fr-FR', {minimumFractionDigits:1, maximumFractionDigits:1}) + ' L';
     document.getElementById('r-litres-a').textContent  = fmtL(litresA);
     document.getElementById('r-litres-ar').textContent = fmtL(litresA * 2);
