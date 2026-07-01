@@ -89,25 +89,14 @@
     .param-row:last-child { border-bottom: none; }
     /* Séparation un peu plus marquée entre le bloc Carburant/Conso et Départ/Destination */
     /* Plus d'air autour du trait pour bien détacher les deux blocs */
-    /* padding-top réserve la place de la valeur (sortie du flux, au-dessus de la
-       règle) : ainsi l'icône et « Consommation » s'alignent sur la règle. */
-
-    .param-icon {
-      font-size: 16px;
-      width: 22px;
-      text-align: center;
-      flex-shrink: 0;
-      line-height: 1;
-      /* Les emojis sont rendus un peu haut dans leur ligne selon l'OS :
-         léger décalage vers le bas pour les aligner avec le texte. */
-      transform: translateY(-2px);
-    }
     .param-label {
-      font-size: 13px;
+      font-size: 15px;
+      font-weight: 600;
       color: #455060;
       width: 94px;
       flex-shrink: 0;
       line-height: 1.2;
+      text-align: left;
     }
     .param-input {
       flex: 1;
@@ -294,15 +283,14 @@
       .card { padding: 16px; }
       .section { padding: 6px 12px; }
       .param-row { flex-wrap: wrap; row-gap: 7px; }
-      .param-label { width: auto; flex: none; font-size: 13px; }
+      .param-label { width: auto; flex: none; font-size: 14px; }
       .param-input { flex: 1 0 100%; }
       /* Étapes : pas de ligne de libellé (numéro en placeholder), encadré + ✕ sur une ligne */
-      .is-stop .param-icon, .is-stop .param-label { display: none; }
+      .is-stop .param-label { display: none; }
       .is-stop .param-input { flex: 1 1 auto; }
       /* Recentre les flèches pile entre les deux encadrés (layout empilé) */
       #swapBtn { transform: translateY(calc(-50% + 11px)); }
       #swapBtn:active { transform: translateY(calc(-50% + 11px)) scale(0.9); }
-      .param-icon { width: 20px; font-size: 15px; }
       input[type="text"], input[type="number"], select { font-size: 15px; padding: 9px 11px; }
       /* Mobile : on garde la règle glissable, les flèches disparaissent. */
       .conso-line .conso-roulette { display: block; }
@@ -639,7 +627,6 @@
     <!-- Bloc Carburant / Consommation -->
     <div class="section">
     <div class="param-row carburant-row">
-      <div class="param-icon">⛽</div>
       <div class="param-label">Carburant</div>
       <div class="param-input">
         <select id="carburant" onchange="resetResultat(); chargerPrix();">
@@ -654,7 +641,6 @@
     </div>
 
     <div class="param-row conso-row">
-      <div class="param-icon">🚗</div>
       <div class="param-label">Consommation</div>
       <div class="param-input">
         <input type="hidden" id="conso" value="7.5">
@@ -942,7 +928,6 @@ function makePointRow(value) {
   row.className = 'param-row point-row';
   row.innerHTML =
     '<div class="drag-handle" title="Glisser pour déplacer">⠿</div>' +
-    '<div class="param-icon"></div>' +
     '<div class="param-label"></div>' +
     '<div class="param-input"><div class="autocomplete-wrap">' +
       '<input type="text" class="point-input" autocomplete="off" oninput="onPointInput(this)">' +
@@ -960,22 +945,21 @@ function refreshPoints() {
   // Poignées de déplacement visibles uniquement quand il y a au moins une étape.
   const showHandles = rows.length > 2;
   rows.forEach((row, i) => {
-    const icon = row.querySelector('.param-icon');
     const label = row.querySelector('.param-label');
     const input = row.querySelector('.point-input');
     const rm = row.querySelector('.stop-remove');
     row.querySelector('.drag-handle').style.display = showHandles ? '' : 'none';
     if (i === 0) {
-      icon.textContent = '🏠'; label.textContent = 'Départ';
+      label.textContent = 'Départ';
       input.placeholder = 'Adresse de départ'; rm.style.display = 'none';
       row.classList.remove('is-stop');
     } else if (i === rows.length - 1) {
-      icon.textContent = '🏁'; label.textContent = 'Destination';
+      label.textContent = 'Destination';
       input.placeholder = 'Lieu de vacances'; rm.style.display = 'none';
       row.classList.remove('is-stop');
     } else {
       // Étape : le numéro passe en placeholder dans l'encadré, ✕ à droite.
-      icon.textContent = '📍'; label.textContent = '';
+      label.textContent = '';
       input.placeholder = 'Étape ' + i; rm.style.display = '';
       row.classList.add('is-stop');
     }
