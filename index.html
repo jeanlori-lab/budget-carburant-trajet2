@@ -265,11 +265,14 @@
     }
 
     @media (max-width: 480px) {
-      .param-label { width: 80px; font-size: 12px; }
-      .param-icon { width: 22px; font-size: 15px; }
-      input[type="text"], input[type="number"], select { font-size: 12px; padding: 7px 8px; }
-      .auto-field { font-size: 12px; padding: 7px 8px; }
-
+      /* Mobile : le libellé passe au-dessus, l'encadré prend toute la largeur */
+      .card { padding: 16px; }
+      .section { padding: 6px 12px; }
+      .param-row { flex-wrap: wrap; row-gap: 3px; }
+      .param-label { width: auto; flex: none; font-size: 13px; }
+      .param-input { flex: 1 0 100%; }
+      .param-icon { width: 20px; font-size: 15px; }
+      input[type="text"], input[type="number"], select { font-size: 15px; padding: 9px 11px; }
     }
 
     /* Autocomplete */
