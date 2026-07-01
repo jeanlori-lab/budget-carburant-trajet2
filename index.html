@@ -784,6 +784,19 @@ function frenchFirst(features) {
   });
 }
 
+// Trajets limités au continent européen : on écarte les résultats de géocodage
+// hors Europe (Asie, États-Unis, îles lointaines…) pour simplifier les choix.
+const EUROPE_COUNTRIES = new Set([
+  'ALA','ALB','AND','AUT','BEL','BGR','BIH','BLR','CHE','CYP','CZE','DEU','DNK',
+  'ESP','EST','FIN','FRA','FRO','GBR','GGY','GIB','GRC','HRV','HUN','IMN','IRL',
+  'ISL','ITA','JEY','LIE','LTU','LUX','LVA','MCO','MDA','MKD','MLT','MNE','NLD',
+  'NOR','POL','PRT','ROU','SMR','SRB','SVK','SVN','SWE','UKR','VAT','XKX',
+]);
+function isEurope(feature) {
+  const cc = feature.properties && feature.properties.country_a;
+  return EUROPE_COUNTRIES.has(cc);
+}
+
 // Autocomplétion d'adresses pour un champ donné (suggestions ORS, France d'abord).
 async function onAutoComplete(input) {
   const list = input.parentElement.querySelector('.autocomplete-list');
@@ -804,7 +817,7 @@ async function onAutoComplete(input) {
       if (!d.features || d.features.length === 0) { list.style.display = 'none'; return; }
       list.innerHTML = '';
       const vus = new Set();
-      frenchFirst(d.features).forEach(f => {
+      frenchFirst(d.features.filter(isEurope)).forEach(f => {
         if (list.children.length >= 6) return; // limite l'affichage
         const label = f.properties.label;
         // Le géocodeur renvoie parfois plusieurs résultats au même libellé : on dédoublonne.
@@ -1164,8 +1177,10 @@ async function geocode(lieu, apiKey) {
   if (!r.ok) throw new Error('Géocodage impossible pour "' + lieu + '"');
   const d = await r.json();
   if (!d.features || d.features.length === 0) throw new Error('Adresse introuvable : "' + lieu + '"');
-  // France d'abord (sans exclure l'étranger si aucun résultat français).
-  return frenchFirst(d.features)[0].geometry.coordinates;
+  const europeens = d.features.filter(isEurope);
+  if (!europeens.length) throw new Error('Adresse introuvable en Europe : "' + lieu + '"');
+  // France d'abord (sans exclure le reste de l'Europe si aucun résultat français).
+  return frenchFirst(europeens)[0].geometry.coordinates;
 }
 
 async function getRoute(coords, apiKey) {
