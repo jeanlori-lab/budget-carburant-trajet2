@@ -85,7 +85,10 @@
     .param-row:last-child { border-bottom: none; }
     /* Séparation un peu plus marquée entre le bloc Carburant/Conso et Départ/Destination */
     /* Plus d'air autour du trait pour bien détacher les deux blocs */
-    .conso-row { border-bottom: 1.5px solid #d4dbe4; padding-bottom: 15px; }
+    /* padding-top réserve la place de la valeur (sortie du flux, au-dessus de la
+       règle) : ainsi l'icône et « Consommation » s'alignent sur la règle. */
+    .conso-row { border-bottom: 1.5px solid #d4dbe4; padding-top: 24px; padding-bottom: 15px; }
+    .conso-row .param-input { position: relative; }
 
     .param-icon {
       font-size: 16px;
@@ -168,12 +171,14 @@
 
     /* Valeur sélectionnée, au-dessus de la règle (indépendante) */
     .conso-value {
+      position: absolute;
+      bottom: calc(100% + 5px);
+      left: 0; right: 0;
       text-align: center;
       font-weight: 700;
       color: #1b5e20;
       font-size: 15px;
       line-height: 1;
-      margin-bottom: 5px;
     }
     .conso-value .roulette-unit { font-size: 11px; font-weight: 600; color: #6f8a72; }
 
@@ -290,7 +295,7 @@
     /* Flèches d'inversion : à droite, chevauchent le coin des encadrés, discrètes */
     .swap-btn {
       position: absolute;
-      right: -12px; /* centré sur le bord droit des encadrés (carré à cheval) */
+      right: -10px; /* centré sur le bord droit des encadrés (carré à cheval) */
       top: 50%;
       transform: translateY(-50%);
       width: 24px; height: 24px;
