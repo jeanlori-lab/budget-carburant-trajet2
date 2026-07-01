@@ -97,19 +97,21 @@
     .carburant-row { padding-top: 8px; }
     .passagers-row { padding-bottom: 8px; }
 
-    /* Essai : Carburant et Consommation côte à côte, libellé au-dessus du champ. */
-    .fuel-conso-cols { display: flex; gap: 14px; align-items: stretch; }
+    /* Carburant et Consommation côte à côte (ordi) : émoji à côté du titre,
+       champ en dessous, ligne verticale entre les deux colonnes. */
+    .fuel-conso-cols { display: flex; align-items: stretch; }
     .fuel-conso-cols .carburant-row,
     .fuel-conso-cols .conso-row {
       flex: 1;
       min-width: 0;
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 6px;
+      flex-wrap: wrap;
+      row-gap: 8px;
+      border-bottom: none;
     }
-    .fuel-conso-cols .param-icon { margin-bottom: -4px; }
     .fuel-conso-cols .param-label { width: auto; }
-    .fuel-conso-cols .param-input { width: 100%; }
+    .fuel-conso-cols .param-input { flex: 1 0 100%; }
+    .fuel-conso-cols .conso-row { border-left: 1.5px solid #cfd8e0; padding-left: 14px; margin-left: 14px; }
+    .fuel-conso-cols + .passagers-row { margin-top: 14px; }
     /* Séparation un peu plus marquée entre le bloc Carburant/Conso et Départ/Destination */
     /* Plus d'air autour du trait pour bien détacher les deux blocs */
     .param-icon {
@@ -356,10 +358,13 @@
       .conso-arrow { display: none; }
       .conso-value { width: 92px; }
       /* Carburant/Consommation restent empilés sur mobile (pas de côte à côte, trop étroit). */
-      .fuel-conso-cols { flex-direction: column; gap: 0; }
+      .fuel-conso-cols { flex-direction: column; }
       .fuel-conso-cols .carburant-row,
-      .fuel-conso-cols .conso-row { flex-direction: row; flex-wrap: wrap; align-items: center; gap: 10px; }
-      .fuel-conso-cols .param-icon { margin-bottom: 0; }
+      .fuel-conso-cols .conso-row {
+        border-bottom: 1.5px solid #cfd8e0;
+      }
+      .fuel-conso-cols .conso-row { border-left: none; padding-left: 0; margin-left: 0; }
+      .fuel-conso-cols + .passagers-row { margin-top: 0; }
     }
 
     /* Autocomplete */
