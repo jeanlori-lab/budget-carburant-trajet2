@@ -693,12 +693,12 @@
     </div>
   </div>
 
-  <!-- Astuce retour haptique iOS 17.4+ (switch natif caché) : l'élément doit rester
-       « à l'écran » (pas de display:none, pas de position très hors-champ) pour que
-       WebKit instancie réellement le contrôle natif et déclenche le taptic. -->
-  <div aria-hidden="true" style="position:absolute; top:0; left:0; width:1px; height:1px; overflow:hidden; opacity:0.02; pointer-events:none;">
-    <input type="checkbox" switch id="hapticSwitch" tabindex="-1">
-  </div>
+  <!-- Astuce retour haptique iOS 17.4+ (switch natif caché) : l'élément garde sa
+       taille normale de rendu (pas de clip 1px, pas de display:none) et reste dans
+       le viewport, juste rendu quasi invisible par l'opacité et repoussé derrière
+       le contenu — pour que WebKit instancie réellement le contrôle natif. -->
+  <input type="checkbox" switch id="hapticSwitch" tabindex="-1" aria-hidden="true"
+    style="position:fixed; top:0; left:0; opacity:0.01; pointer-events:none; z-index:-1;">
 
   <button class="btn" id="calcBtn" onclick="calculer()">Calculer le coût du trajet</button>
   <div class="loader" id="loader">⏳ Calcul en cours…</div>
