@@ -818,13 +818,6 @@
     </div>
   </div>
 
-  <!-- Astuce retour haptique iOS 17.4+ (switch natif caché) : l'élément garde sa
-       taille normale de rendu (pas de clip 1px, pas de display:none) et reste dans
-       le viewport, juste rendu quasi invisible par l'opacité et repoussé derrière
-       le contenu — pour que WebKit instancie réellement le contrôle natif. -->
-  <input type="checkbox" switch id="hapticSwitch" tabindex="-1" aria-hidden="true"
-    style="position:fixed; top:0; left:0; opacity:0.01; pointer-events:none; z-index:-1;">
-
   <button class="btn" id="calcBtn" onclick="calculer()">Calculer le coût du trajet</button>
   <div class="loader" id="loader">⏳ Calcul en cours…</div>
   <div class="error" id="error"></div>
@@ -1057,16 +1050,15 @@ function hideError() { document.getElementById('error').style.display='none'; }
 function setLoading(on) { document.getElementById('loader').style.display=on?'block':'none'; document.getElementById('calcBtn').disabled=on; }
 function resetResultat() { document.getElementById('sectionResultats').style.display='none'; hideError(); }
 
-// Petit retour haptique (mobile). Android : API Vibration. iOS 17.4+ : astuce
-// du switch caché (Safari ne supporte pas navigator.vibrate).
-let _lastHaptic = 0, _hapticSwitch = null;
+// Petit retour haptique (Android via l'API Vibration ; Safari iOS ne l'expose
+// pas, aucune astuce fiable n'existe côté web pour la remplacer).
+let _lastHaptic = 0;
 function hapticTick() {
+  if (typeof navigator === 'undefined' || !navigator.vibrate) return;
   const now = Date.now();
   if (now - _lastHaptic < 20) return; // throttle : évite la surchauffe en drag rapide
   _lastHaptic = now;
-  if (typeof navigator !== 'undefined' && navigator.vibrate) { navigator.vibrate(3); return; }
-  if (!_hapticSwitch) _hapticSwitch = document.getElementById('hapticSwitch');
-  if (_hapticSwitch) { try { _hapticSwitch.click(); } catch (e) {} }
+  navigator.vibrate(3);
 }
 
 // --- Roulette de consommation (1 à 30, pas de 0,1) ---
