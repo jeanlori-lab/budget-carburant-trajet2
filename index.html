@@ -989,7 +989,16 @@ async function onAutoComplete(input) {
       const vus = new Set();
       frenchFirst(d.features.filter(isEurope)).forEach(f => {
         if (list.children.length >= 6) return; // limite l'affichage
-        const label = f.properties.label;
+        // Libellé enrichi avec le département/la région : indispensable pour
+        // distinguer les homonymes (ex. Vanne en Haute-Saône vs Vannes dans le
+        // Morbihan), et le texte choisi désambiguïse aussi le géocodage final.
+        const p = f.properties;
+        const zone = p.county || p.region || p.state;
+        let label = p.label;
+        if (p.name && zone && zone !== p.name && !p.label.includes(zone)) {
+          const ville = (p.locality && p.locality !== p.name) ? p.locality : null;
+          label = [p.name, ville, zone, p.country].filter(Boolean).join(', ');
+        }
         // Le géocodeur renvoie parfois plusieurs résultats au même libellé : on dédoublonne.
         const cle = label.trim().toLowerCase();
         if (vus.has(cle)) return;
