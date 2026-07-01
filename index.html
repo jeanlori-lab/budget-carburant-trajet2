@@ -101,7 +101,7 @@
     .param-label {
       font-size: 13px;
       color: #455060;
-      width: 106px;
+      width: 94px;
       flex-shrink: 0;
       line-height: 1.2;
     }
@@ -155,10 +155,6 @@
     .prix-actuel #prixAffiche {
       font-weight: 700;
       color: #2e7d32;
-      background: #e6f6e9;
-      padding: 2px 9px;
-      border-radius: 20px;
-      margin-left: 2px;
     }
     /* La ligne de prix est sortie du flux (position absolue) : ainsi l'icône, le
        mot « Carburant » et la liste déroulante restent centrés ensemble. */
@@ -185,15 +181,13 @@
     .conso-line .conso-roulette { flex: 1; }
     .conso-value {
       flex-shrink: 0;
-      width: 64px;
+      width: 92px;
       text-align: left;
-      font-weight: 800;
-      color: #1b5e20;
-      font-size: 15px;
       line-height: 1;
       white-space: nowrap;
     }
-    .conso-value .roulette-unit { font-size: 10px; font-weight: 600; color: #6f8a72; }
+    .conso-value #consoVal { font-size: 18px; font-weight: 400; color: #1b5e20; }
+    .conso-value .roulette-unit { font-size: 10px; font-weight: 600; color: #607080; }
 
     /* Règle / roulette de consommation (glisser horizontal, souris + doigt) */
     .conso-roulette {
@@ -271,7 +265,7 @@
     }
 
     @media (max-width: 480px) {
-      .param-label { width: 84px; font-size: 12px; }
+      .param-label { width: 80px; font-size: 12px; }
       .param-icon { width: 22px; font-size: 15px; }
       input[type="text"], input[type="number"], select { font-size: 12px; padding: 7px 8px; }
       .auto-field { font-size: 12px; padding: 7px 8px; }
@@ -633,7 +627,7 @@
             <div class="roulette-viewport"><div class="roulette-track" id="rouletteTrack"></div></div>
             <div class="roulette-center"></div>
           </div>
-          <div class="conso-value"><span id="consoVal">7,5</span> <span class="roulette-unit">L/100</span></div>
+          <div class="conso-value"><span id="consoVal">7,5</span> <span class="roulette-unit">L / 100 km</span></div>
         </div>
       </div>
     </div>
